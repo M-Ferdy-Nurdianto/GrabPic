@@ -1,32 +1,23 @@
 /* ==========================================================================
-   GrabPic - Neo-Brutalism Dark Mode Styling
-   Colors:
-   - Base Dark: #0D0D0D
-   - Primary Neon Green: #B4FF39
-   - Accent Purple: #A78BFA
-   - Accent Blue: #3B82F6
-   - Accent Yellow: #FACC15
-   - Accent Orange: #FB923C
-   - Border: #FFFFFF Solid (3-4px)
-   - Hard Shadows: 5px 5px 0px #000000
+   GrabPic - Neo-Brutalism Dark Mode Styling (Revamp & Eye-Catching)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  --gp-bg-dark: #0d0d0d;
-  --gp-card-bg: #171717;
+  --gp-bg-dark: #0f0f11;
+  --gp-card-bg: #18181b;
   --gp-neon-green: #b4ff39;
   --gp-accent-purple: #a78bfa;
-  --gp-accent-blue: #3b82f6;
+  --gp-accent-blue: #38bdf8;
   --gp-accent-yellow: #facc15;
   --gp-accent-orange: #fb923c;
+  --gp-accent-red: #ff4757;
   --gp-border-white: #ffffff;
   --gp-font-heading: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   --gp-font-mono: 'Space Mono', monospace;
 }
 
-/* Base Wrapper to prevent host page CSS leaking */
 #grabpic-root {
   position: fixed;
   z-index: 99999999;
@@ -41,67 +32,70 @@
   padding: 0;
 }
 
-/* Floating Action Trigger - Posisi Mencolok di Sisi Kanan Tengah (Right-Center Floating Badge) */
+/* ==========================================================================
+   FLOATING BUTTON - Top-Right Mencolok & Eye-Catching
+   ========================================================================== */
 .grabpic-fab {
   position: fixed;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  background-color: var(--gp-neon-green);
+  top: 85px;
+  right: 24px;
+  background: var(--gp-neon-green);
   border: 4px solid var(--gp-border-white);
-  border-right: none;
-  box-shadow: -6px 6px 0px #000000;
+  box-shadow: 6px 6px 0px #000000;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 14px 10px;
+  gap: 12px;
+  padding: 8px 14px 8px 8px;
   cursor: pointer;
   z-index: 99999999;
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   user-select: none;
+  border-radius: 0;
 }
 
 .grabpic-fab:hover {
-  transform: translateY(-50%) translateX(-6px);
-  background-color: #c9ff6a;
-  box-shadow: -10px 10px 0px #000000;
+  transform: translate(-3px, -3px) rotate(-1deg);
+  box-shadow: 9px 9px 0px #000000;
+  background: #c8ff6e;
 }
 
 .grabpic-fab:active {
-  transform: translateY(-50%) translateX(-2px);
-  box-shadow: -4px 4px 0px #000000;
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0px #000000;
 }
 
-.grabpic-fab-text {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  font-family: var(--gp-font-heading);
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 1.5px;
-  color: #0d0d0d;
+.grabpic-fab-logo-box {
+  width: 44px;
+  height: 44px;
+  background: #000;
+  border: 3px solid var(--gp-border-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 2px 0px #000;
 }
 
 .grabpic-fab-logo {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
-  border: 2px solid #0d0d0d;
-  box-shadow: 2px 2px 0px #000;
   display: block;
-  border-radius: 4px;
 }
 
-.grabpic-header-logo {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border: 2px solid #fff;
-  box-shadow: 2px 2px 0px #000;
-  border-radius: 4px;
+.grabpic-fab-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.grabpic-fab-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0d0d0d;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
 .grabpic-badge {
@@ -109,21 +103,22 @@
   color: #0d0d0d;
   font-family: var(--gp-font-mono);
   font-weight: 900;
-  font-size: 13px;
-  padding: 2px 6px;
-  border: 3px solid var(--gp-border-white);
-  box-shadow: 2px 2px 0px #000000;
-  min-width: 22px;
-  text-align: center;
-  margin-bottom: 4px;
+  font-size: 11px;
+  padding: 2px 7px;
+  border: 2px solid #000;
+  box-shadow: 2px 2px 0px #000;
+  text-transform: uppercase;
+  line-height: 1.2;
 }
 
-/* Drawer / Side Panel */
+/* ==========================================================================
+   DRAWER PANEL - Clean & Aesthetic Neo-Brutalism
+   ========================================================================== */
 .grabpic-drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
   z-index: 99999998;
   opacity: 0;
   pointer-events: none;
@@ -139,12 +134,12 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 460px;
-  max-width: 90vw;
+  width: 500px;
+  max-width: 92vw;
   height: 100vh;
   background-color: var(--gp-bg-dark);
   border-left: 4px solid var(--gp-border-white);
-  box-shadow: -10px 0px 0px rgba(0,0,0,0.8);
+  box-shadow: -12px 0px 0px rgba(0, 0, 0, 0.9);
   z-index: 99999999;
   display: flex;
   flex-direction: column;
@@ -158,8 +153,8 @@
 
 /* Header */
 .grabpic-header {
-  padding: 18px 20px;
-  background-color: var(--gp-bg-dark);
+  padding: 16px 20px;
+  background-color: #141416;
   border-bottom: 4px solid var(--gp-border-white);
   display: flex;
   align-items: center;
@@ -169,7 +164,30 @@
 .grabpic-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.grabpic-header-logo-box {
+  width: 40px;
+  height: 40px;
+  background: #000;
+  border: 3px solid var(--gp-border-white);
+  box-shadow: 3px 3px 0px #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grabpic-header-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.grabpic-brand-titles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .grabpic-logo-tag {
@@ -178,26 +196,25 @@
   font-weight: 900;
   font-size: 20px;
   letter-spacing: 0.5px;
-  padding: 4px 10px;
+  padding: 3px 10px;
   border: 3px solid var(--gp-border-white);
-  box-shadow: 4px 4px 0px #000;
-  transform: rotate(-2deg);
+  box-shadow: 3px 3px 0px #000;
 }
 
 .grabpic-platform-tag {
   font-family: var(--gp-font-mono);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   background: var(--gp-accent-purple);
   color: #0d0d0d;
-  padding: 3px 6px;
+  padding: 3px 8px;
   border: 2px solid var(--gp-border-white);
   box-shadow: 2px 2px 0px #000;
 }
 
 .grabpic-close-btn {
-  background: #ff4757;
+  background: var(--gp-accent-red);
   color: #ffffff;
   border: 3px solid var(--gp-border-white);
   box-shadow: 4px 4px 0px #000;
@@ -217,36 +234,32 @@
   box-shadow: 6px 6px 0px #000;
 }
 
-.grabpic-close-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px #000;
-}
-
-/* Action Controls Bar */
+/* Controls Toolbar */
 .grabpic-controls {
   padding: 12px 20px;
-  background: #141414;
-  border-bottom: 4px solid var(--gp-border-white);
+  background: #18181c;
+  border-bottom: 3px solid var(--gp-border-white);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .grabpic-select-all-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
 }
 
-/* Custom Neo-brutalism Big Square Checkbox */
+/* Neo-Brutalism Checkbox */
 .grabpic-checkbox {
   appearance: none;
   -webkit-appearance: none;
   width: 24px;
   height: 24px;
-  background: #1e1e1e;
+  background: #242429;
   border: 3px solid var(--gp-border-white);
   box-shadow: 2px 2px 0px #000;
   cursor: pointer;
@@ -267,48 +280,78 @@
   left: 50%;
   transform: translate(-50%, -55%);
   color: #0d0d0d;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 900;
 }
 
 .grabpic-controls-label {
   font-family: var(--gp-font-mono);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   color: #f1f1f1;
 }
 
+/* Format Switcher (ZIP vs Individual Direct) */
+.grabpic-format-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0d0d0d;
+  padding: 4px 8px;
+  border: 2px solid var(--gp-border-white);
+  box-shadow: 2px 2px 0px #000;
+  cursor: pointer;
+  user-select: none;
+}
+
+.grabpic-format-label {
+  font-family: var(--gp-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gp-accent-yellow);
+}
+
 .grabpic-refresh-btn {
-  background: #262626;
+  background: #27272a;
   border: 2px solid var(--gp-border-white);
   box-shadow: 3px 3px 0px #000;
   color: #fff;
   font-family: var(--gp-font-mono);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   padding: 5px 10px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  transition: transform 0.1s ease;
 }
 
 .grabpic-refresh-btn:hover {
-  background: #333;
+  background: #3f3f46;
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #000;
 }
 
-/* Gallery Grid */
+/* ==========================================================================
+   GALLERY GRID & CARDS
+   ========================================================================== */
 .grabpic-gallery {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 18px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
+  gap: 16px;
   align-content: start;
+}
+
+.grabpic-gallery::-webkit-scrollbar {
+  width: 8px;
+}
+.grabpic-gallery::-webkit-scrollbar-track {
+  background: #141416;
+}
+.grabpic-gallery::-webkit-scrollbar-thumb {
+  background: var(--gp-neon-green);
+  border: 2px solid #000;
 }
 
 /* Empty State */
@@ -316,7 +359,7 @@
   grid-column: 1 / -1;
   padding: 40px 20px;
   text-align: center;
-  background: #181818;
+  background: #18181b;
   border: 3px dashed var(--gp-border-white);
   box-shadow: 5px 5px 0px #000;
   margin: auto 0;
@@ -324,7 +367,7 @@
 
 .grabpic-empty-title {
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--gp-neon-green);
   margin-bottom: 8px;
   text-transform: uppercase;
@@ -333,30 +376,30 @@
 .grabpic-empty-desc {
   font-family: var(--gp-font-mono);
   font-size: 12px;
-  color: #a0a0a0;
+  color: #a1a1aa;
   line-height: 1.5;
 }
 
-/* Image Card - Bisa diklik langsung */
+/* Card */
 .grabpic-card {
   position: relative;
   background: var(--gp-card-bg);
   border: 3px solid var(--gp-border-white);
   display: flex;
   flex-direction: column;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, outline 0.15s ease;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease, border-color 0.15s ease;
   user-select: none;
   cursor: pointer;
+  background-clip: padding-box;
 }
 
-/* Active / Selected Card Indicator */
+/* Active Highlight */
 .grabpic-card.selected {
   border-color: var(--gp-neon-green);
-  outline: 2px solid var(--gp-neon-green);
 }
 
 .grabpic-card.selected::before {
-  content: "TERPILIH";
+  content: "★ TERPILIH";
   position: absolute;
   top: -10px;
   right: -6px;
@@ -365,14 +408,14 @@
   font-family: var(--gp-font-mono);
   font-size: 9px;
   font-weight: 900;
-  padding: 2px 5px;
-  border: 2px solid #fff;
+  padding: 2px 6px;
+  border: 2px solid #000;
   box-shadow: 2px 2px 0px #000;
-  z-index: 5;
-  transform: rotate(3deg);
+  z-index: 10;
+  transform: rotate(2deg);
 }
 
-/* Dynamic Multi-Color Hard Shadows */
+/* Dynamic Multi-Color Shadows */
 .grabpic-card[data-shadow="green"] {
   box-shadow: 5px 5px 0px var(--gp-neon-green);
 }
@@ -390,20 +433,21 @@
 }
 
 .grabpic-card:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(-4px);
+  filter: brightness(1.05);
 }
 
+/* Dynamic Aspect Ratios */
 .grabpic-card-thumb-wrap {
   position: relative;
   width: 100%;
-  background: #000;
+  background: #09090b;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Dynamic Aspect Ratios */
-  min-height: 120px;
-  max-height: 240px;
+  min-height: 130px;
+  max-height: 220px;
 }
 
 .grabpic-card-thumb-wrap.orientation-portrait {
@@ -429,8 +473,8 @@
   position: absolute;
   top: 8px;
   left: 8px;
-  z-index: 2;
-  pointer-events: none; /* Klik card akan mentoggle checkbox otomatis */
+  z-index: 5;
+  pointer-events: none;
 }
 
 .grabpic-card-single-dl {
@@ -441,26 +485,26 @@
   color: #0d0d0d;
   border: 2px solid var(--gp-border-white);
   box-shadow: 2px 2px 0px #000;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-weight: 900;
-  font-size: 14px;
-  z-index: 2;
-  transition: transform 0.1s;
+  font-size: 15px;
+  z-index: 5;
+  transition: transform 0.1s ease, background 0.1s ease;
 }
 
 .grabpic-card-single-dl:hover {
-  transform: scale(1.15) rotate(5deg);
+  transform: scale(1.15) rotate(4deg);
   background: var(--gp-neon-green);
 }
 
 .grabpic-card-meta {
   padding: 8px 10px;
-  background: #111;
+  background: #111114;
   border-top: 3px solid var(--gp-border-white);
   display: flex;
   justify-content: space-between;
@@ -469,21 +513,23 @@
 
 .grabpic-card-idx {
   font-family: var(--gp-font-mono);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   color: var(--gp-neon-green);
 }
 
 .grabpic-card-res {
   font-family: var(--gp-font-mono);
   font-size: 10px;
-  color: #888;
+  color: #a1a1aa;
 }
 
-/* Footer Section */
+/* ==========================================================================
+   FOOTER - Action Buttons
+   ========================================================================== */
 .grabpic-footer {
   padding: 16px 20px 14px;
-  background: var(--gp-bg-dark);
+  background: #141416;
   border-top: 4px solid var(--gp-border-white);
   display: flex;
   flex-direction: column;
@@ -498,9 +544,9 @@
 
 .grabpic-btn {
   width: 100%;
-  padding: 14px 16px;
+  padding: 13px 16px;
   font-family: var(--gp-font-heading);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -509,7 +555,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 4px solid var(--gp-border-white);
+  border: 3px solid var(--gp-border-white);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -522,28 +568,29 @@
 .grabpic-btn-all:hover:not(:disabled) {
   transform: translate(-2px, -2px);
   box-shadow: 7px 7px 0px #000;
+  background: #c7ff68;
 }
 
 .grabpic-btn-all:active:not(:disabled) {
   transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0px #000;
+  box-shadow: 2px 2px 0px #000;
 }
 
 .grabpic-btn-selected {
-  background: transparent;
+  background: #242429;
   color: #ffffff;
   box-shadow: 5px 5px 0px #000;
 }
 
 .grabpic-btn-selected:hover:not(:disabled) {
-  background: #222;
+  background: #33333b;
   transform: translate(-2px, -2px);
   box-shadow: 7px 7px 0px #000;
 }
 
 .grabpic-btn-selected:active:not(:disabled) {
   transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0px #000;
+  box-shadow: 2px 2px 0px #000;
 }
 
 .grabpic-btn:disabled {
@@ -558,7 +605,7 @@
   text-align: center;
   font-family: var(--gp-font-mono);
   font-size: 11px;
-  color: #888888;
+  color: #71717a;
 }
 
 .grabpic-credit a {
@@ -573,28 +620,28 @@
   text-decoration: underline;
 }
 
-/* Toast Notification */
+/* Toast */
 .grabpic-toast {
   position: fixed;
-  bottom: 100px;
-  right: 28px;
-  background: #111;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  background: #09090b;
   color: #fff;
   border: 3px solid var(--gp-border-white);
-  box-shadow: 5px 5px 0px #000;
-  padding: 10px 16px;
+  box-shadow: 6px 6px 0px #000;
+  padding: 10px 18px;
   font-family: var(--gp-font-mono);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   z-index: 100000000;
-  transform: translateY(20px);
   opacity: 0;
   pointer-events: none;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .grabpic-toast.show {
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
 
@@ -604,6 +651,6 @@
 }
 
 .grabpic-toast.error {
-  border-color: #ff4757;
-  color: #ff4757;
+  border-color: var(--gp-accent-red);
+  color: var(--gp-accent-red);
 }

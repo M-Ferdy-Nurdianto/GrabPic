@@ -1,17 +1,20 @@
 /**
  * GrabPic Content Script
  * Auto-detects generated & uploaded chat images in ChatGPT and Google Gemini.
- * Provides a Neo-Brutalism dark mode UI gallery drawer with batch ZIP and single downloads.
+ * Features:
+ * - Conspicuous Top-Right Floating Action Button with Extension Logo
+ * - Eye-Catching Neo-Brutalism Dark Mode Panel
+ * - ZIP Mode vs Direct Single Files Mode Toggle
+ * - Aspect Ratio Adaptive Grid (Portrait, Landscape, Square)
+ * - Click anywhere on card to select
  */
 
 (function () {
   'use strict';
 
-  // Prevent multiple injections
   if (window.__grabpic_injected) return;
   window.__grabpic_injected = true;
 
-  // Platform detection
   const isChatGPT = /chatgpt\.com|chat\.openai\.com/.test(window.location.hostname);
   const isGemini = /gemini\.google\.com/.test(window.location.hostname);
   const platformName = isChatGPT ? 'chatgpt' : isGemini ? 'gemini' : 'web';
@@ -19,17 +22,15 @@
   const COLOR_SHADOWS = ['green', 'purple', 'blue', 'yellow', 'orange'];
 
   // State
-  let detectedImages = []; // Array of { id, src, width, height, isSelected, shadowColor }
+  let detectedImages = [];
   let isDrawerOpen = false;
+  let isZipMode = true; // Toggle between ZIP archive or direct separate files
   let observer = null;
   let scanDebounceTimer = null;
 
-  // Initialize UI
   initUI();
   setupObserver();
   startContinuousScanner();
-
-  // Scan immediately
   scanImages();
 
   function initUI() {
@@ -37,11 +38,15 @@
     const rootContainer = document.createElement('div');
     rootContainer.id = 'grabpic-root';
     rootContainer.innerHTML = `
-      <!-- FAB - Floating Tab di Sisi Kanan Tengah dengan Logo GrabPic Asli -->
-      <div id="grabpic-fab" class="grabpic-fab" title="Buka GrabPic Galeri" style="display: none;">
-        <div id="grabpic-badge" class="grabpic-badge">0</div>
-        <img class="grabpic-fab-logo" src="${iconUrl}" alt="GrabPic" />
-        <span class="grabpic-fab-text">GRABPIC</span>
+      <!-- FAB: Top-Right Eye-Catching Banner Button with Big Logo -->
+      <div id="grabpic-fab" class="grabpic-fab" title="Buka GrabPic Gallery" style="display: none;">
+        <div class="grabpic-fab-logo-box">
+          <img class="grabpic-fab-logo" src="${iconUrl}" alt="GrabPic Logo" />
+        </div>
+        <div class="grabpic-fab-info">
+          <span class="grabpic-fab-title">GrabPic</span>
+          <div id="grabpic-badge" class="grabpic-badge">0 FOTO</div>
+        </div>
       </div>
 
       <!-- Backdrop -->
@@ -52,28 +57,37 @@
         <!-- Header -->
         <div class="grabpic-header">
           <div class="grabpic-brand">
-            <img class="grabpic-header-logo" src="${iconUrl}" alt="GrabPic Logo" />
-            <span class="grabpic-logo-tag">GRABPIC</span>
-            <span class="grabpic-platform-tag">${platformName}</span>
+            <div class="grabpic-header-logo-box">
+              <img class="grabpic-header-logo" src="${iconUrl}" alt="GrabPic" />
+            </div>
+            <div class="grabpic-brand-titles">
+              <span class="grabpic-logo-tag">GRABPIC</span>
+              <span class="grabpic-platform-tag">${platformName}</span>
+            </div>
           </div>
-          <button id="grabpic-close-btn" class="grabpic-close-btn" title="Close Panel">✕</button>
+          <button id="grabpic-close-btn" class="grabpic-close-btn" title="Tutup Panel">✕</button>
         </div>
 
-        <!-- Controls Bar -->
+        <!-- Controls Toolbar -->
         <div class="grabpic-controls">
-          <label class="grabpic-select-all-wrapper">
+          <label class="grabpic-select-all-wrapper" title="Pilih / Batal Pilih Semua">
             <input type="checkbox" id="grabpic-select-all-cb" class="grabpic-checkbox" checked />
-            <span class="grabpic-controls-label" id="grabpic-select-all-text">PILIH SEMUA</span>
+            <span class="grabpic-controls-label" id="grabpic-select-all-text">SEMUA</span>
           </label>
-          <button id="grabpic-refresh-btn" class="grabpic-refresh-btn" title="Scan ulang gambar">
-            <span>⚡ SCAN</span>
+
+          <!-- ZIP vs Direct File Download Option -->
+          <label class="grabpic-format-toggle" title="Pilih format unduhan: ZIP atau File Satuan">
+            <input type="checkbox" id="grabpic-zip-toggle" class="grabpic-checkbox" checked style="width:18px;height:18px;" />
+            <span class="grabpic-format-label" id="grabpic-zip-label">ZIP ARCHIVE</span>
+          </label>
+
+          <button id="grabpic-refresh-btn" class="grabpic-refresh-btn" title="Scan Ulang Gambar di Halaman">
+            ⚡ SCAN
           </button>
         </div>
 
         <!-- Gallery Grid -->
-        <div id="grabpic-gallery" class="grabpic-gallery">
-          <!-- Populated dynamically -->
-        </div>
+        <div id="grabpic-gallery" class="grabpic-gallery"></div>
 
         <!-- Footer -->
         <div class="grabpic-footer">
@@ -102,6 +116,8 @@
     const overlay = document.getElementById('grabpic-overlay');
     const closeBtn = document.getElementById('grabpic-close-btn');
     const selectAllCb = document.getElementById('grabpic-select-all-cb');
+    const zipToggle = document.getElementById('grabpic-zip-toggle');
+    const zipLabel = document.getElementById('grabpic-zip-label');
     const refreshBtn = document.getElementById('grabpic-refresh-btn');
     const downloadAllBtn = document.getElementById('grabpic-btn-download-all');
     const downloadSelectedBtn = document.getElementById('grabpic-btn-download-selected');
@@ -116,19 +132,25 @@
       updateGalleryUI();
     });
 
+    zipToggle.addEventListener('change', (e) => {
+      isZipMode = e.target.checked;
+      zipLabel.textContent = isZipMode ? 'ZIP ARCHIVE' : 'DIRECT FILES';
+      showToast(`Mode Download: ${isZipMode ? 'ZIP Archive' : 'File Satuan Langsung'}`, 'success');
+    });
+
     refreshBtn.addEventListener('click', () => {
       scanImages(true);
       showToast('Memindai ulang gambar...', 'success');
     });
 
-    downloadAllBtn.addEventListener('click', () => downloadImages(detectedImages));
+    downloadAllBtn.addEventListener('click', () => downloadBatch(detectedImages));
     downloadSelectedBtn.addEventListener('click', () => {
       const selected = detectedImages.filter((img) => img.isSelected);
       if (selected.length === 0) {
         showToast('Pilih setidaknya satu gambar!', 'error');
         return;
       }
-      downloadImages(selected);
+      downloadBatch(selected);
     });
   }
 
@@ -157,7 +179,6 @@
     observer = new MutationObserver((mutations) => {
       let shouldScan = false;
       for (const mutation of mutations) {
-        // Ignore changes inside GrabPic itself
         if (mutation.target && (mutation.target.id === 'grabpic-root' || mutation.target.closest?.('#grabpic-root'))) {
           continue;
         }
@@ -182,14 +203,13 @@
   }
 
   function startContinuousScanner() {
-    // Periodic light scan for streaming / dynamic canvas / lazy load
     setInterval(() => {
       scanImages();
     }, 3000);
   }
 
   /**
-   * Scan and filter actual chat images (exclude avatars, UI icons, svgs, small logos)
+   * Scan and filter actual chat images (exclude avatars, UI icons, svgs)
    */
   function scanImages(forceUpdate = false) {
     const rawImages = Array.from(document.querySelectorAll('img'));
@@ -197,45 +217,38 @@
     const newDetected = [];
 
     rawImages.forEach((img) => {
-      // Ignore GrabPic own images if any
       if (img.closest('#grabpic-root')) return;
 
       const src = img.currentSrc || img.src;
       if (!src || src.startsWith('data:image/svg')) return;
 
-      // Exclude common UI / Avatar / small icon patterns
       if (
         src.includes('avatar') ||
         src.includes('profile') ||
         src.includes('favicon') ||
         src.includes('icon-') ||
         src.includes('/assets/avatars/') ||
-        src.includes('googleusercontent.com/a/') // Google profile avatar
+        src.includes('googleusercontent.com/a/')
       ) {
         return;
       }
 
-      // Check dimensions (real or rendered)
       const rect = img.getBoundingClientRect();
       const naturalWidth = img.naturalWidth || rect.width;
       const naturalHeight = img.naturalHeight || rect.height;
 
-      // Minimum size threshold to filter icons/avatars (usually <= 64px)
       if (naturalWidth < 100 || naturalHeight < 100) return;
 
-      // Must not be an inline SVG or button child
       if (img.closest('button') || img.closest('nav') || img.closest('header')) {
-        // Double check if in chat container or generated preview
         const isPreviewOrChat = img.closest('[data-message-author-role], .conversation-container, main, article, [role="presentation"]');
         if (!isPreviewOrChat) return;
       }
 
-      // Calculate orientation
       let orientation = 'square';
       const ratio = naturalWidth / naturalHeight;
-      if (ratio > 1.2) {
+      if (ratio > 1.15) {
         orientation = 'landscape';
-      } else if (ratio < 0.85) {
+      } else if (ratio < 0.88) {
         orientation = 'portrait';
       }
 
@@ -243,14 +256,13 @@
         validSrcSet.add(src);
         newDetected.push({
           src,
-          width: naturalWidth,
-          height: naturalHeight,
+          width: Math.round(naturalWidth),
+          height: Math.round(naturalHeight),
           orientation
         });
       }
     });
 
-    // Also look for background images or canvas if any
     const backgrounds = document.querySelectorAll('[style*="background-image"]');
     backgrounds.forEach((el) => {
       if (el.closest('#grabpic-root')) return;
@@ -268,8 +280,8 @@
           if (rect.width >= 100 && rect.height >= 100) {
             const ratio = rect.width / rect.height;
             let orientation = 'square';
-            if (ratio > 1.2) orientation = 'landscape';
-            else if (ratio < 0.85) orientation = 'portrait';
+            if (ratio > 1.15) orientation = 'landscape';
+            else if (ratio < 0.88) orientation = 'portrait';
 
             validSrcSet.add(src);
             newDetected.push({
@@ -283,12 +295,10 @@
       }
     });
 
-    // Check if list changed
     const currentSrcs = detectedImages.map((i) => i.src).sort().join('|');
     const newSrcs = newDetected.map((i) => i.src).sort().join('|');
 
     if (currentSrcs !== newSrcs || forceUpdate) {
-      // Merge while preserving selection state
       detectedImages = newDetected.map((item, index) => {
         const existing = detectedImages.find((img) => img.src === item.src);
         return {
@@ -321,10 +331,9 @@
     const totalCount = detectedImages.length;
     const selectedCount = detectedImages.filter((i) => i.isSelected).length;
 
-    // Show/Hide FAB based on detection
     if (totalCount > 0) {
       fab.style.display = 'flex';
-      badge.textContent = totalCount;
+      badge.textContent = `${totalCount} FOTO`;
     } else {
       fab.style.display = 'none';
     }
@@ -332,17 +341,15 @@
     totalCountEl.textContent = totalCount;
     selectedCountEl.textContent = selectedCount;
 
-    // Update Select All Checkbox
     if (selectAllCb) {
       selectAllCb.checked = totalCount > 0 && selectedCount === totalCount;
       selectAllCb.indeterminate = selectedCount > 0 && selectedCount < totalCount;
-      selectAllText.textContent = selectAllCb.checked ? 'BATAL PILIH' : 'PILIH SEMUA';
+      selectAllText.textContent = selectAllCb.checked ? 'BATAL' : 'SEMUA';
     }
 
     downloadAllBtn.disabled = totalCount === 0;
     downloadSelectedBtn.disabled = selectedCount === 0;
 
-    // Render cards
     if (totalCount === 0) {
       gallery.innerHTML = `
         <div class="grabpic-empty-state">
@@ -367,7 +374,7 @@
         <div class="grabpic-card-thumb-wrap orientation-${item.orientation}">
           <input type="checkbox" class="grabpic-checkbox grabpic-card-check" data-id="${item.id}" ${item.isSelected ? 'checked' : ''} />
           <img class="grabpic-card-img" src="${item.src}" alt="Chat Pic #${item.index}" loading="lazy" />
-          <button class="grabpic-card-single-dl" data-id="${item.id}" title="Download gambar ini saja">⬇</button>
+          <button class="grabpic-card-single-dl" data-id="${item.id}" title="Download gambar ini langsung">⬇</button>
         </div>
         <div class="grabpic-card-meta">
           <span class="grabpic-card-idx">#${String(item.index).padStart(2, '0')} [${item.orientation.toUpperCase()}]</span>
@@ -375,9 +382,8 @@
         </div>
       `;
 
-      // Klik langsung pada seluruh card untuk toggle selection
+      // Klik seluruh area card untuk toggle selection
       card.addEventListener('click', (e) => {
-        // Jangan toggle jika user klik tombol download single
         if (e.target.closest('.grabpic-card-single-dl')) {
           return;
         }
@@ -395,7 +401,7 @@
         updateCountsAndButtonsOnly();
       });
 
-      // Single download handler
+      // Tombol download single per card
       const singleDlBtn = card.querySelector('.grabpic-card-single-dl');
       singleDlBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -422,15 +428,12 @@
     if (selectAllCb) {
       selectAllCb.checked = totalCount > 0 && selectedCount === totalCount;
       selectAllCb.indeterminate = selectedCount > 0 && selectedCount < totalCount;
-      selectAllText.textContent = selectAllCb.checked ? 'BATAL PILIH' : 'PILIH SEMUA';
+      selectAllText.textContent = selectAllCb.checked ? 'BATAL' : 'SEMUA';
     }
 
     if (downloadSelectedBtn) downloadSelectedBtn.disabled = selectedCount === 0;
   }
 
-  /**
-   * Helper to fetch image as Blob or base64 (handling CORS via fetch or Canvas fallback)
-   */
   async function fetchImageBlob(url) {
     if (url.startsWith('data:')) {
       const res = await fetch(url);
@@ -446,7 +449,6 @@
       console.warn('[GrabPic] Direct fetch failed, trying canvas fallback:', err);
     }
 
-    // Canvas fallback
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -472,11 +474,8 @@
     return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
   }
 
-  /**
-   * Download single image
-   */
   async function downloadSingleImage(item) {
-    showToast(`Mengunduh gambar #${item.index}...`, 'success');
+    showToast(`Mengunduh foto #${item.index}...`, 'success');
     const timestamp = getTimestamp();
     const filename = `grabpic-${platformName}-${timestamp}-${String(item.index).padStart(2, '0')}.png`;
 
@@ -484,12 +483,11 @@
       const blob = await fetchImageBlob(item.src);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64Data = reader.result;
         chrome.runtime.sendMessage(
           {
             action: 'DOWNLOAD_FILE',
             payload: {
-              base64: base64Data,
+              base64: reader.result,
               filename: filename,
               mimeType: blob.type || 'image/png'
             }
@@ -505,8 +503,7 @@
       };
       reader.readAsDataURL(blob);
     } catch (err) {
-      console.error('[GrabPic] Download single failed:', err);
-      // Direct URL fallback to background
+      console.error('[GrabPic] Direct download fallback:', err);
       chrome.runtime.sendMessage(
         {
           action: 'DOWNLOAD_FILE',
@@ -527,24 +524,30 @@
   }
 
   /**
-   * Download list of images (Zip if > 1, otherwise single)
+   * Batch Download handler (ZIP Archive OR Direct Sequential Files)
    */
-  async function downloadImages(items) {
+  async function downloadBatch(items) {
     if (!items || items.length === 0) return;
 
     const timestamp = getTimestamp();
 
-    if (items.length === 1) {
-      await downloadSingleImage(items[0]);
+    // Mode: Direct Individual Files (Tanpa ZIP)
+    if (!isZipMode || items.length === 1) {
+      showToast(`Mengunduh ${items.length} file secara langsung...`, 'success');
+      for (let i = 0; i < items.length; i++) {
+        await downloadSingleImage(items[i]);
+        await new Promise((r) => setTimeout(r, 250)); // Jeda halus agar browser tidak memblokir multi-download
+      }
       return;
     }
 
+    // Mode: ZIP Archive
     if (typeof JSZip === 'undefined') {
-      showToast('Error: Library JSZip tidak ditemukan.', 'error');
+      showToast('Error: JSZip tidak tersedia.', 'error');
       return;
     }
 
-    showToast(`Memproses ${items.length} gambar ke ZIP...`, 'success');
+    showToast(`Membuat file ZIP dari ${items.length} gambar...`, 'success');
 
     try {
       const zip = new JSZip();
@@ -563,7 +566,7 @@
           completed++;
           showToast(`Mengambil gambar (${completed}/${items.length})...`, 'success');
         } catch (error) {
-          console.error(`[GrabPic] Failed to add item #${item.index} to zip:`, error);
+          console.error(`[GrabPic] Failed to add #${item.index} to zip:`, error);
         }
       }
 
@@ -578,19 +581,18 @@
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64Data = reader.result;
         chrome.runtime.sendMessage(
           {
             action: 'DOWNLOAD_FILE',
             payload: {
-              base64: base64Data,
+              base64: reader.result,
               filename: zipFilename,
               mimeType: 'application/zip'
             }
           },
           (response) => {
             if (response && response.success) {
-              showToast(`ZIP Berhasil diunduh: ${zipFilename}`, 'success');
+              showToast(`ZIP Selesai: ${zipFilename}`, 'success');
             } else {
               showToast(`Gagal download ZIP: ${response?.error}`, 'error');
             }
@@ -599,7 +601,7 @@
       };
       reader.readAsDataURL(zipBlob);
     } catch (err) {
-      console.error('[GrabPic] ZIP generation error:', err);
+      console.error('[GrabPic] ZIP error:', err);
       showToast(`Terjadi kesalahan: ${err.message}`, 'error');
     }
   }
