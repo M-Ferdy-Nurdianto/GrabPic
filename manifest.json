@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "GrabPic - AI Image Downloader",
+  "version": "1.0.0",
+  "description": "Deteksi dan unduh gambar dari sesi chat ChatGPT dan Google Gemini secara massal atau satuan dengan gaya Neo-Brutalism.",
+  "author": "M-Ferdy-Nurdianto",
+  "permissions": [
+    "downloads"
+  ],
+  "host_permissions": [
+    "*://chatgpt.com/*",
+    "*://*.chatgpt.com/*",
+    "*://chat.openai.com/*",
+    "*://gemini.google.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://chatgpt.com/*",
+        "*://*.chatgpt.com/*",
+        "*://chat.openai.com/*",
+        "*://gemini.google.com/*"
+      ],
+      "js": [
+        "lib/jszip.min.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    },
+    "default_title": "GrabPic"
+  }
+}
