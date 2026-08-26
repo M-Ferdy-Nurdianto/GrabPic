@@ -36,14 +36,15 @@
     const rootContainer = document.createElement('div');
     rootContainer.id = 'grabpic-root';
     rootContainer.innerHTML = `
-      <!-- FAB -->
-      <div id="grabpic-fab" class="grabpic-fab" title="Open GrabPic Gallery" style="display: none;">
+      <!-- FAB - Floating Tab di Sisi Kanan Tengah (Mencolok) -->
+      <div id="grabpic-fab" class="grabpic-fab" title="Buka GrabPic Galeri" style="display: none;">
+        <div id="grabpic-badge" class="grabpic-badge">0</div>
         <svg class="grabpic-fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
           <rect x="3" y="3" width="18" height="18" rx="0" />
           <circle cx="8.5" cy="8.5" r="1.5" />
           <polyline points="21 15 16 10 5 21" />
         </svg>
-        <div id="grabpic-badge" class="grabpic-badge">0</div>
+        <span class="grabpic-fab-text">GRABPIC</span>
       </div>
 
       <!-- Backdrop -->
@@ -231,12 +232,22 @@
         if (!isPreviewOrChat) return;
       }
 
+      // Calculate orientation
+      let orientation = 'square';
+      const ratio = naturalWidth / naturalHeight;
+      if (ratio > 1.2) {
+        orientation = 'landscape';
+      } else if (ratio < 0.85) {
+        orientation = 'portrait';
+      }
+
       if (!validSrcSet.has(src)) {
         validSrcSet.add(src);
         newDetected.push({
           src,
           width: naturalWidth,
-          height: naturalHeight
+          height: naturalHeight,
+          orientation
         });
       }
     });
@@ -257,11 +268,17 @@
         ) {
           const rect = el.getBoundingClientRect();
           if (rect.width >= 100 && rect.height >= 100) {
+            const ratio = rect.width / rect.height;
+            let orientation = 'square';
+            if (ratio > 1.2) orientation = 'landscape';
+            else if (ratio < 0.85) orientation = 'portrait';
+
             validSrcSet.add(src);
             newDetected.push({
               src,
               width: Math.round(rect.width),
-              height: Math.round(rect.height)
+              height: Math.round(rect.height),
+              orientation
             });
           }
         }
@@ -282,6 +299,7 @@
           src: item.src,
           width: item.width,
           height: item.height,
+          orientation: item.orientation || 'square',
           isSelected: existing ? existing.isSelected : true,
           shadowColor: COLOR_SHADOWS[index % COLOR_SHADOWS.length]
         };
@@ -343,25 +361,39 @@
 
     detectedImages.forEach((item) => {
       const card = document.createElement('div');
-      card.className = 'grabpic-card';
+      card.className = `grabpic-card ${item.isSelected ? 'selected' : ''}`;
       card.setAttribute('data-shadow', item.shadowColor);
+      card.setAttribute('data-id', item.id);
 
       card.innerHTML = `
-        <div class="grabpic-card-thumb-wrap">
+        <div class="grabpic-card-thumb-wrap orientation-${item.orientation}">
           <input type="checkbox" class="grabpic-checkbox grabpic-card-check" data-id="${item.id}" ${item.isSelected ? 'checked' : ''} />
           <img class="grabpic-card-img" src="${item.src}" alt="Chat Pic #${item.index}" loading="lazy" />
           <button class="grabpic-card-single-dl" data-id="${item.id}" title="Download gambar ini saja">⬇</button>
         </div>
         <div class="grabpic-card-meta">
-          <span class="grabpic-card-idx">#${String(item.index).padStart(2, '0')}</span>
+          <span class="grabpic-card-idx">#${String(item.index).padStart(2, '0')} [${item.orientation.toUpperCase()}]</span>
           <span class="grabpic-card-res">${item.width}×${item.height}</span>
         </div>
       `;
 
-      // Checkbox handler
-      const cb = card.querySelector('.grabpic-card-check');
-      cb.addEventListener('change', (e) => {
-        item.isSelected = e.target.checked;
+      // Klik langsung pada seluruh card untuk toggle selection
+      card.addEventListener('click', (e) => {
+        // Jangan toggle jika user klik tombol download single
+        if (e.target.closest('.grabpic-card-single-dl')) {
+          return;
+        }
+
+        item.isSelected = !item.isSelected;
+        const cb = card.querySelector('.grabpic-card-check');
+        if (cb) cb.checked = item.isSelected;
+
+        if (item.isSelected) {
+          card.classList.add('selected');
+        } else {
+          card.classList.remove('selected');
+        }
+
         updateCountsAndButtonsOnly();
       });
 
