@@ -330,22 +330,30 @@
   transform: translate(-1px, -1px);
 }
 
-/* Optional Output Folder Bar */
-.grabpic-folder-bar {
-  padding: 8px 18px;
+/* Optional Output Folder & Custom Base Name Bar */
+.grabpic-inputs-bar {
+  padding: 10px 18px;
   background: #111113;
   border-bottom: 3px solid var(--gp-border-white);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grabpic-input-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.grabpic-folder-icon {
-  font-size: 16px;
+.grabpic-input-icon {
+  font-size: 15px;
   user-select: none;
+  width: 18px;
+  text-align: center;
 }
 
-.grabpic-folder-input {
+.grabpic-text-input {
   flex: 1;
   background: #1f1f24;
   border: 2px solid var(--gp-border-white);
@@ -359,12 +367,13 @@
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.grabpic-folder-input::placeholder {
+.grabpic-text-input::placeholder {
   color: #71717a;
   font-weight: normal;
+  font-size: 11px;
 }
 
-.grabpic-folder-input:focus {
+.grabpic-text-input:focus {
   background: #27272f;
   border-color: var(--gp-neon-green);
   box-shadow: 3px 3px 0px #000;

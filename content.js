@@ -86,16 +86,28 @@
           </button>
         </div>
 
-        <!-- Optional Output Subfolder Input -->
-        <div class="grabpic-folder-bar">
-          <span class="grabpic-folder-icon">📁</span>
-          <input 
-            type="text" 
-            id="grabpic-folder-input" 
-            class="grabpic-folder-input" 
-            placeholder="Folder Output (Opsional, cth: Gambar-AI)" 
-            title="Ketik nama subfolder penyimpanan di dalam folder Downloads (Opsional)"
-          />
+        <!-- Optional Output Subfolder & Custom Base Name Bar -->
+        <div class="grabpic-inputs-bar">
+          <div class="grabpic-input-row">
+            <span class="grabpic-input-icon">📁</span>
+            <input 
+              type="text" 
+              id="grabpic-folder-input" 
+              class="grabpic-text-input" 
+              placeholder="Folder Output (Opsional, cth: Horeg)" 
+              title="Ketik nama subfolder penyimpanan (Opsional)"
+            />
+          </div>
+          <div class="grabpic-input-row">
+            <span class="grabpic-input-icon">🏷️</span>
+            <input 
+              type="text" 
+              id="grabpic-name-input" 
+              class="grabpic-text-input" 
+              placeholder="Nama File (Opsional, cth: foto blur)" 
+              title="Nama dasar file otomatis, misal 'foto blur' -> foto blur 1, foto blur 2, dst."
+            />
+          </div>
         </div>
 
         <!-- Gallery Grid -->
@@ -486,6 +498,21 @@
     return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
   }
 
+  function getFormattedFilename(seqIndex, totalCount) {
+    const nameInput = document.getElementById('grabpic-name-input');
+    const customBase = nameInput ? nameInput.value.trim().replace(/[\\/:*?"<>|]/g, '_') : '';
+    const timestamp = getTimestamp();
+
+    if (customBase) {
+      // Format: [customBase] [1/2/3...].png
+      return `${customBase} ${seqIndex}.png`;
+    }
+
+    // Default fallback format
+    const padIndex = String(seqIndex).padStart(2, '0');
+    return `grabpic-${platformName}-${timestamp}-${padIndex}.png`;
+  }
+
   function getTargetFilePath(baseFilename) {
     const folderInput = document.getElementById('grabpic-folder-input');
     const folderName = folderInput ? folderInput.value.trim().replace(/[\\/:*?"<>|]/g, '_') : '';
@@ -495,11 +522,12 @@
     return baseFilename;
   }
 
-  async function downloadSingleImage(item) {
-    showToast(`Mengunduh foto #${item.index}...`, 'success');
-    const timestamp = getTimestamp();
-    const rawFilename = `grabpic-${platformName}-${timestamp}-${String(item.index).padStart(2, '0')}.png`;
+  async function downloadSingleImage(item, customSeq = null) {
+    const seqIndex = customSeq !== null ? customSeq : item.index;
+    const rawFilename = getFormattedFilename(seqIndex, detectedImages.length);
     const targetFilename = getTargetFilePath(rawFilename);
+
+    showToast(`Mengunduh: ${rawFilename}...`, 'success');
 
     try {
       const blob = await fetchImageBlob(item.src);
@@ -552,13 +580,16 @@
     if (!items || items.length === 0) return;
 
     const timestamp = getTimestamp();
+    const nameInput = document.getElementById('grabpic-name-input');
+    const customBase = nameInput ? nameInput.value.trim().replace(/[\\/:*?"<>|]/g, '_') : '';
 
     // Mode: Direct Individual Files (Tanpa ZIP)
     if (!isZipMode || items.length === 1) {
-      showToast(`Mengunduh ${items.length} file secara langsung...`, 'success');
+      showToast(`Mengunduh ${items.length} file...`, 'success');
       for (let i = 0; i < items.length; i++) {
-        await downloadSingleImage(items[i]);
-        await new Promise((r) => setTimeout(r, 250)); // Jeda halus agar browser tidak memblokir multi-download
+        // Sequential index 1, 2, 3, ... N
+        await downloadSingleImage(items[i], i + 1);
+        await new Promise((r) => setTimeout(r, 280));
       }
       return;
     }
@@ -573,14 +604,14 @@
 
     try {
       const zip = new JSZip();
-      const folder = zip.folder(`grabpic-${platformName}-${timestamp}`);
+      const zipFolderName = customBase ? `${customBase}-${timestamp}` : `grabpic-${platformName}-${timestamp}`;
+      const folder = zip.folder(zipFolderName);
 
       let completed = 0;
 
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        const fileIndex = String(item.index).padStart(2, '0');
-        const imgFilename = `grabpic-${platformName}-${timestamp}-${fileIndex}.png`;
+        const imgFilename = getFormattedFilename(i + 1, items.length);
 
         try {
           const blob = await fetchImageBlob(item.src);
@@ -599,7 +630,7 @@
 
       showToast('Mengompresi ZIP...', 'success');
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-      const rawZipFilename = `grabpic-${platformName}-${timestamp}.zip`;
+      const rawZipFilename = customBase ? `${customBase}-${timestamp}.zip` : `grabpic-${platformName}-${timestamp}.zip`;
       const targetZipFilename = getTargetFilePath(rawZipFilename);
 
       const reader = new FileReader();
