@@ -38,14 +38,16 @@
     const rootContainer = document.createElement('div');
     rootContainer.id = 'grabpic-root';
     rootContainer.innerHTML = `
-      <!-- FAB: Top-Right Eye-Catching Banner Button with Big Logo -->
+      <!-- FAB: Top-Right Running LED Border Button with Big Logo -->
       <div id="grabpic-fab" class="grabpic-fab" title="Buka GrabPic Gallery" style="display: none;">
-        <div class="grabpic-fab-logo-box">
-          <img class="grabpic-fab-logo" src="${iconUrl}" alt="GrabPic Logo" />
-        </div>
-        <div class="grabpic-fab-info">
-          <span class="grabpic-fab-title">GrabPic</span>
-          <div id="grabpic-badge" class="grabpic-badge">0 FOTO</div>
+        <div class="grabpic-fab-inner">
+          <div class="grabpic-fab-logo-box">
+            <img class="grabpic-fab-logo" src="${iconUrl}" alt="GrabPic Logo" />
+          </div>
+          <div class="grabpic-fab-info">
+            <span class="grabpic-fab-title">GrabPic</span>
+            <div id="grabpic-badge" class="grabpic-badge">0 FOTO</div>
+          </div>
         </div>
       </div>
 
