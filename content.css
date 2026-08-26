@@ -85,10 +85,23 @@
   color: #0d0d0d;
 }
 
-.grabpic-fab-icon {
-  width: 26px;
-  height: 26px;
-  color: #0d0d0d;
+.grabpic-fab-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border: 2px solid #0d0d0d;
+  box-shadow: 2px 2px 0px #000;
+  display: block;
+  border-radius: 4px;
+}
+
+.grabpic-header-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border: 2px solid #fff;
+  box-shadow: 2px 2px 0px #000;
+  border-radius: 4px;
 }
 
 .grabpic-badge {

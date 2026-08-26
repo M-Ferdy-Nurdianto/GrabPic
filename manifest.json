@@ -40,6 +40,22 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icon16.png",
+        "icon32.png",
+        "icon48.png",
+        "icon128.png"
+      ],
+      "matches": [
+        "*://chatgpt.com/*",
+        "*://*.chatgpt.com/*",
+        "*://chat.openai.com/*",
+        "*://gemini.google.com/*"
+      ]
+    }
+  ],
   "action": {
     "default_icon": {
       "16": "icon16.png",

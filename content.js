@@ -33,17 +33,14 @@
   scanImages();
 
   function initUI() {
+    const iconUrl = chrome.runtime.getURL('icon48.png');
     const rootContainer = document.createElement('div');
     rootContainer.id = 'grabpic-root';
     rootContainer.innerHTML = `
-      <!-- FAB - Floating Tab di Sisi Kanan Tengah (Mencolok) -->
+      <!-- FAB - Floating Tab di Sisi Kanan Tengah dengan Logo GrabPic Asli -->
       <div id="grabpic-fab" class="grabpic-fab" title="Buka GrabPic Galeri" style="display: none;">
         <div id="grabpic-badge" class="grabpic-badge">0</div>
-        <svg class="grabpic-fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
-          <rect x="3" y="3" width="18" height="18" rx="0" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <polyline points="21 15 16 10 5 21" />
-        </svg>
+        <img class="grabpic-fab-logo" src="${iconUrl}" alt="GrabPic" />
         <span class="grabpic-fab-text">GRABPIC</span>
       </div>
 
@@ -55,6 +52,7 @@
         <!-- Header -->
         <div class="grabpic-header">
           <div class="grabpic-brand">
+            <img class="grabpic-header-logo" src="${iconUrl}" alt="GrabPic Logo" />
             <span class="grabpic-logo-tag">GRABPIC</span>
             <span class="grabpic-platform-tag">${platformName}</span>
           </div>
