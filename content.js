@@ -86,6 +86,18 @@
           </button>
         </div>
 
+        <!-- Optional Output Subfolder Input -->
+        <div class="grabpic-folder-bar">
+          <span class="grabpic-folder-icon">📁</span>
+          <input 
+            type="text" 
+            id="grabpic-folder-input" 
+            class="grabpic-folder-input" 
+            placeholder="Folder Output (Opsional, cth: Gambar-AI)" 
+            title="Ketik nama subfolder penyimpanan di dalam folder Downloads (Opsional)"
+          />
+        </div>
+
         <!-- Gallery Grid -->
         <div id="grabpic-gallery" class="grabpic-gallery"></div>
 
@@ -474,10 +486,20 @@
     return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
   }
 
+  function getTargetFilePath(baseFilename) {
+    const folderInput = document.getElementById('grabpic-folder-input');
+    const folderName = folderInput ? folderInput.value.trim().replace(/[\\/:*?"<>|]/g, '_') : '';
+    if (folderName) {
+      return `${folderName}/${baseFilename}`;
+    }
+    return baseFilename;
+  }
+
   async function downloadSingleImage(item) {
     showToast(`Mengunduh foto #${item.index}...`, 'success');
     const timestamp = getTimestamp();
-    const filename = `grabpic-${platformName}-${timestamp}-${String(item.index).padStart(2, '0')}.png`;
+    const rawFilename = `grabpic-${platformName}-${timestamp}-${String(item.index).padStart(2, '0')}.png`;
+    const targetFilename = getTargetFilePath(rawFilename);
 
     try {
       const blob = await fetchImageBlob(item.src);
@@ -488,13 +510,13 @@
             action: 'DOWNLOAD_FILE',
             payload: {
               base64: reader.result,
-              filename: filename,
+              filename: targetFilename,
               mimeType: blob.type || 'image/png'
             }
           },
           (response) => {
             if (response && response.success) {
-              showToast(`Tersimpan: ${filename}`, 'success');
+              showToast(`Tersimpan: ${rawFilename}`, 'success');
             } else {
               showToast(`Gagal: ${response?.error || 'Unknown error'}`, 'error');
             }
@@ -509,12 +531,12 @@
           action: 'DOWNLOAD_FILE',
           payload: {
             url: item.src,
-            filename: filename
+            filename: targetFilename
           }
         },
         (response) => {
           if (response && response.success) {
-            showToast(`Tersimpan: ${filename}`, 'success');
+            showToast(`Tersimpan: ${rawFilename}`, 'success');
           } else {
             showToast(`Gagal mengunduh: ${err.message}`, 'error');
           }
@@ -577,7 +599,8 @@
 
       showToast('Mengompresi ZIP...', 'success');
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-      const zipFilename = `grabpic-${platformName}-${timestamp}.zip`;
+      const rawZipFilename = `grabpic-${platformName}-${timestamp}.zip`;
+      const targetZipFilename = getTargetFilePath(rawZipFilename);
 
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -586,13 +609,13 @@
             action: 'DOWNLOAD_FILE',
             payload: {
               base64: reader.result,
-              filename: zipFilename,
+              filename: targetZipFilename,
               mimeType: 'application/zip'
             }
           },
           (response) => {
             if (response && response.success) {
-              showToast(`ZIP Selesai: ${zipFilename}`, 'success');
+              showToast(`ZIP Selesai: ${rawZipFilename}`, 'success');
             } else {
               showToast(`Gagal download ZIP: ${response?.error}`, 'error');
             }

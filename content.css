@@ -330,6 +330,46 @@
   transform: translate(-1px, -1px);
 }
 
+/* Optional Output Folder Bar */
+.grabpic-folder-bar {
+  padding: 8px 18px;
+  background: #111113;
+  border-bottom: 3px solid var(--gp-border-white);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grabpic-folder-icon {
+  font-size: 16px;
+  user-select: none;
+}
+
+.grabpic-folder-input {
+  flex: 1;
+  background: #1f1f24;
+  border: 2px solid var(--gp-border-white);
+  box-shadow: 2px 2px 0px #000;
+  color: var(--gp-neon-green);
+  font-family: var(--gp-font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.grabpic-folder-input::placeholder {
+  color: #71717a;
+  font-weight: normal;
+}
+
+.grabpic-folder-input:focus {
+  background: #27272f;
+  border-color: var(--gp-neon-green);
+  box-shadow: 3px 3px 0px #000;
+}
+
 /* ==========================================================================
    GALLERY GRID & CARDS
    ========================================================================== */
