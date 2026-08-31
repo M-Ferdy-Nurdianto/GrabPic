@@ -178,6 +178,13 @@
       }
       downloadBatch(selected);
     });
+
+    // Listen for extension icon click from background.js
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message.action === 'TOGGLE_DRAWER') {
+        toggleDrawer();
+      }
+    });
   }
 
   function toggleDrawer() {
@@ -235,7 +242,8 @@
   }
 
   /**
-   * Scan and filter actual chat images (exclude avatars, UI icons, svgs)
+   * Scan and filter actual chat images (AI generated images & uploaded chat images)
+   * Excludes UI elements, avatars, slide deck presentations/canvases, and generic website graphics.
    */
   function scanImages(forceUpdate = false) {
     const rawImages = Array.from(document.querySelectorAll('img'));
@@ -248,26 +256,73 @@
       const src = img.currentSrc || img.src;
       if (!src || src.startsWith('data:image/svg')) return;
 
+      // Exclude standard UI icons and avatars
       if (
         src.includes('avatar') ||
         src.includes('profile') ||
         src.includes('favicon') ||
         src.includes('icon-') ||
         src.includes('/assets/avatars/') ||
-        src.includes('googleusercontent.com/a/')
+        src.includes('googleusercontent.com/a/') ||
+        src.includes('ssl.gstatic.com') ||
+        src.includes('gstatic.com/chat')
       ) {
         return;
+      }
+
+      // Exclude Gemini Canvas / Slide presentation deck UI & artifacts
+      if (
+        img.closest('.presentation-container, .slide-container, [role="region"][aria-label*="presentation" i], .slides-deck, .canvas-container, [data-test-id="canvas"], .canvas-root')
+      ) {
+        return;
+      }
+
+      // Gemini specific filter: ONLY AI GENERATED RESPONSES (Exclude user uploads / user queries)
+      if (isGemini) {
+        // Exclude user upload containers or input thumbnails explicitly
+        if (
+          img.closest('user-query, .user-query, .user-message, .input-area, .uploader, .file-preview, [data-test-id="user-turn"]')
+        ) {
+          return;
+        }
+
+        // Must strictly belong to AI Model response or Imagen generated outputs
+        const isGeminiAiResponse = img.closest(
+          'model-response, .model-response, [data-test-id="model-response"], .response-container, .generated-image, .image-response'
+        );
+
+        const isGeneratedImageClass = img.classList.contains('generated-image') || 
+                                      img.closest('.image-grid') || 
+                                      img.closest('[data-test-id="generated-image"]');
+
+        if (!isGeminiAiResponse && !isGeneratedImageClass) {
+          return;
+        }
+      }
+
+      // ChatGPT specific filter: ONLY ASSISTANT GENERATED RESPONSES (Exclude user uploaded attachments)
+      if (isChatGPT) {
+        // Exclude user uploads/prompts
+        if (img.closest('[data-message-author-role="user"]')) {
+          return;
+        }
+
+        const isChatGptAssistant = img.closest('[data-message-author-role="assistant"], .agent-turn');
+        if (!isChatGptAssistant) {
+          return;
+        }
       }
 
       const rect = img.getBoundingClientRect();
       const naturalWidth = img.naturalWidth || rect.width;
       const naturalHeight = img.naturalHeight || rect.height;
 
+      // Filter out tiny icons
       if (naturalWidth < 100 || naturalHeight < 100) return;
 
       if (img.closest('button') || img.closest('nav') || img.closest('header')) {
-        const isPreviewOrChat = img.closest('[data-message-author-role], .conversation-container, main, article, [role="presentation"]');
-        if (!isPreviewOrChat) return;
+        const isModelResponse = img.closest('model-response, [data-message-author-role="assistant"]');
+        if (!isModelResponse) return;
       }
 
       let orientation = 'square';
@@ -289,9 +344,22 @@
       }
     });
 
+    // Handle background-image attachments in AI response turns if any
     const backgrounds = document.querySelectorAll('[style*="background-image"]');
     backgrounds.forEach((el) => {
       if (el.closest('#grabpic-root')) return;
+
+      // Ensure background is strictly inside AI model response
+      if (isGemini) {
+        if (el.closest('user-query, .user-query, [data-test-id="user-turn"], .canvas-container, .slide-container')) return;
+        const inGeminiAi = el.closest('model-response, [data-test-id="model-response"], .generated-image');
+        if (!inGeminiAi) return;
+      } else if (isChatGPT) {
+        if (el.closest('[data-message-author-role="user"]')) return;
+        const inChatGptAi = el.closest('[data-message-author-role="assistant"]');
+        if (!inChatGptAi) return;
+      }
+
       const bg = el.style.backgroundImage;
       const match = bg.match(/url\(["']?([^"']+)["']?\)/);
       if (match && match[1]) {
@@ -300,7 +368,8 @@
           !validSrcSet.has(src) &&
           !src.includes('avatar') &&
           !src.includes('profile') &&
-          !src.startsWith('data:image/svg')
+          !src.startsWith('data:image/svg') &&
+          !src.includes('gstatic.com')
         ) {
           const rect = el.getBoundingClientRect();
           if (rect.width >= 100 && rect.height >= 100) {
@@ -357,12 +426,8 @@
     const totalCount = detectedImages.length;
     const selectedCount = detectedImages.filter((i) => i.isSelected).length;
 
-    if (totalCount > 0) {
-      fab.style.display = 'flex';
-      badge.textContent = `${totalCount} FOTO`;
-    } else {
-      fab.style.display = 'none';
-    }
+    // Only update badge text and enable actions (FAB floating button remains hidden unless clicked via toolbar)
+    badge.textContent = `${totalCount} FOTO`;
 
     totalCountEl.textContent = totalCount;
     selectedCountEl.textContent = selectedCount;

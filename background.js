@@ -17,6 +17,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// Trigger GrabPic drawer when extension icon is clicked in toolbar/extensions menu
+chrome.action.onClicked.addListener((tab) => {
+  if (tab.id) {
+    chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_DRAWER' }).catch((err) => {
+      console.warn('[GrabPic] Tab message failed:', err);
+    });
+  }
+});
+
 async function handleDownload({ url, filename, base64, mimeType }) {
   let downloadUrl = url;
 
